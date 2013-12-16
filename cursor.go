@@ -8,9 +8,6 @@ package mdb
 import "C"
 
 import (
-	// "fmt"
-	"bytes"
-	"encoding/gob"
 	"errors"
 	"unsafe"
 )
@@ -86,37 +83,6 @@ func (cursor *Cursor) Get(set_key []byte, op uint) (key, val []byte, err error) 
 	return
 }
 
-func (cursor *Cursor) GetGo(set_key interface{}, op uint, key, val interface{}) error {
-	var err error
-	var bset_key []byte
-	if set_key != nil {
-		var key_buffer bytes.Buffer
-		encoder := gob.NewEncoder(&key_buffer)
-		err = encoder.Encode(set_key)
-		if err != nil {
-			return err
-		}
-		bset_key = key_buffer.Bytes()
-	}
-	bkey, bval, err := cursor.Get(bset_key, op)
-	if err != nil {
-		return err
-	}
-	buf := bytes.NewReader(bkey)
-	decoder := gob.NewDecoder(buf)
-	err = decoder.Decode(key)
-	if err != nil {
-		return err
-	}
-	buf = bytes.NewReader(bval)
-	decoder = gob.NewDecoder(buf)
-	err = decoder.Decode(val)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (cursor *Cursor) Put(key, val []byte, flags uint) error {
 	ckey := &C.MDB_val{mv_size: C.size_t(len(key)),
 		mv_data: unsafe.Pointer(&key[0])}
@@ -127,22 +93,6 @@ func (cursor *Cursor) Put(key, val []byte, flags uint) error {
 		return Errno(ret)
 	}
 	return nil
-}
-
-func (cursor *Cursor) PutGo(key, val interface{}, flags uint) error {
-	var bkey bytes.Buffer
-	encoder := gob.NewEncoder(&bkey)
-	err := encoder.Encode(key)
-	if err != nil {
-		return err
-	}
-	var bval bytes.Buffer
-	encoder = gob.NewEncoder(&bval)
-	err = encoder.Encode(val)
-	if err != nil {
-		return err
-	}
-	return cursor.Put(bkey.Bytes(), bval.Bytes(), flags)
 }
 
 func (cursor *Cursor) Del(flags uint) error {

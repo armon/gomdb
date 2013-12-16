@@ -1,6 +1,8 @@
 package mdb
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -172,9 +174,14 @@ func TestTest2(t *testing.T) {
 	num_entries := 10
 	for i := 0; i < num_entries; i++ {
 		key = fmt.Sprintf("Key-%d", i)
-		val := TestS{A: i, B: fmt.Sprintf("Val-%d", i), C: float32(i)+0.5}
+		val := TestS{A: i, B: fmt.Sprintf("Val-%d", i), C: float32(i) + 0.5}
 		data[key] = val
-		err = txn.PutGo(dbi, key, val, NOOVERWRITE)
+
+		buf := bytes.NewBuffer(nil)
+		enc := gob.NewEncoder(buf)
+		enc.Encode(val)
+
+		err = txn.Put(dbi, []byte(key), buf.Bytes(), NOOVERWRITE)
 		if err != nil {
 			txn.Abort()
 			t.Fatalf("Error during put: %s", err)
@@ -206,31 +213,33 @@ func TestTest2(t *testing.T) {
 	}
 
 	/*
-	bkey, bval, rc := cursor.Get(nil, NEXT)
-	t.Logf("Key: %+v", bkey)
-	t.Logf("Val: %+v", bval)
-	t.Logf("Rc: %v", rc)
-	*/
-	/*
-	bkey, bval, rc = cursor.Get(nil, NEXT)
-		skey = string(bkey)
-		t.Logf("Key: %s", skey)
-		sval = string(bval)
-		t.Logf("Val: %s", sval)
+		bkey, bval, rc := cursor.Get(nil, NEXT)
+		t.Logf("Key: %+v", bkey)
+		t.Logf("Val: %+v", bval)
 		t.Logf("Rc: %v", rc)
 	*/
-	var rc error
+	/*
+		bkey, bval, rc = cursor.Get(nil, NEXT)
+			skey = string(bkey)
+			t.Logf("Key: %s", skey)
+			sval = string(bval)
+			t.Logf("Val: %s", sval)
+			t.Logf("Rc: %v", rc)
+	*/
 	var d TestS
 	var ok bool
 	var nkey string
 	var nval TestS
 	for {
-		rc = cursor.GetGo(nil, NEXT, &nkey, &nval)
+		key, val, rc := cursor.Get(nil, NEXT)
 		if rc != nil {
 			break
 		}
+		nkey = string(key)
+		gob.NewDecoder(bytes.NewReader(val)).Decode(&nval)
+
 		t.Logf("rc: %+v", rc)
-		t.Logf("Key: %+v", nkey)
+		t.Logf("Key: %+v", key)
 		t.Logf("Val: %+v", nval)
 		if d, ok = data[nkey]; !ok {
 			t.Errorf("Cannot found: %s", nkey)
