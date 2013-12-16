@@ -38,7 +38,7 @@ func TestTest1(t *testing.T) {
 		t.Fatalf("Cannot begin transaction: %s", err)
 	}
 	var dbi DBI
-	dbi, err = txn.DBIOpen(nil, 0)
+	dbi, err = txn.DBIOpen("", 0)
 	defer env.DBIClose(dbi)
 	if err != nil {
 		t.Fatalf("Cannot create DBI %s", err)
@@ -164,7 +164,7 @@ func TestTest2(t *testing.T) {
 		t.Fatalf("Cannot begin transaction: %s", err)
 	}
 	var dbi DBI
-	dbi, err = txn.DBIOpen(nil, 0)
+	dbi, err = txn.DBIOpen("", 0)
 	defer env.DBIClose(dbi)
 	if err != nil {
 		t.Fatalf("Cannot create DBI %s", err)

@@ -79,13 +79,13 @@ func (txn *Txn) Renew() error {
 	return nil
 }
 
-func (txn *Txn) DBIOpen(name *string, flags uint) (DBI, error) {
+func (txn *Txn) DBIOpen(name string, flags uint) (DBI, error) {
 	var _dbi C.MDB_dbi
 	var cname *C.char
-	if name == nil {
+	if name == "" {
 		cname = nil
 	} else {
-		cname = C.CString(*name)
+		cname = C.CString(name)
 		defer C.free(unsafe.Pointer(cname))
 	}
 	ret := C.mdb_dbi_open(txn._txn, cname, C.uint(flags), &_dbi)
