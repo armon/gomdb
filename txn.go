@@ -1,20 +1,17 @@
 package mdb
 
 /*
-#cgo LDFLAGS: -L/usr/local/lib -llmdb
-#cgo CFLAGS: -I/usr/local
-
 #include <stdlib.h>
 #include <stdio.h>
-#include <lmdb.h>
+#include "lmdb.h"
 */
 import "C"
 
 import (
-	"math"
-	"unsafe"
 	"bytes"
 	"encoding/gob"
+	"math"
+	"unsafe"
 )
 
 // DBIOpen Database Flags
@@ -24,7 +21,7 @@ const (
 	INTEGERKEY = C.MDB_INTEGERKEY // numeric keys in native byte order. The keys must all be of the same size.
 	DUPFIXED   = C.MDB_DUPFIXED   // with DUPSORT, sorted dup items have fixed size
 	INTEGERDUP = C.MDB_INTEGERDUP // with DUPSORT, dups are numeric in native byte order
-	REVERSEDUP = C.MDB_REVERSEDUP // with DUPSORT, use reverse string dups 
+	REVERSEDUP = C.MDB_REVERSEDUP // with DUPSORT, use reverse string dups
 	CREATE     = C.MDB_CREATE     // create DB if not already existing
 )
 
@@ -37,8 +34,8 @@ const (
 	APPENDDUP   = C.MDB_APPENDDUP
 )
 
-// Txn is Opaque structure for a transaction handle. 
-// All database operations require a transaction handle. 
+// Txn is Opaque structure for a transaction handle.
+// All database operations require a transaction handle.
 // Transactions may be read-only or read-write.
 type Txn struct {
 	_txn *C.MDB_txn
@@ -169,7 +166,7 @@ func (txn *Txn) Put(dbi DBI, key []byte, val []byte, flags uint) error {
 	return nil
 }
 
-func (txn *Txn) PutGo(dbi DBI, key, val interface {}, flags uint) error {
+func (txn *Txn) PutGo(dbi DBI, key, val interface{}, flags uint) error {
 	var bkey bytes.Buffer
 	encoder := gob.NewEncoder(&bkey)
 	err := encoder.Encode(key)
@@ -202,7 +199,7 @@ func (txn *Txn) Del(dbi DBI, key, val []byte) error {
 	return nil
 }
 
-func (txn *Txn) DelGo(dbi DBI, key, val interface {}) error {
+func (txn *Txn) DelGo(dbi DBI, key, val interface{}) error {
 	var bkey bytes.Buffer
 	encoder := gob.NewEncoder(&bkey)
 	err := encoder.Encode(key)
@@ -264,4 +261,3 @@ func (txn *Txn) SetCompare(dbi DBI, cmp CmpFunc) error {
 // func (txn *Txn) SetDupSort(dbi DBI, comp *C.MDB_comp_func) error
 // func (txn *Txn) SetRelFunc(dbi DBI, rel *C.MDB_rel_func) error
 // func (txn *Txn) SetRelCtx(dbi DBI, void *) error
-
