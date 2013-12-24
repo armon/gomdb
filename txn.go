@@ -59,10 +59,14 @@ func (txn *Txn) Commit() error {
 	if ret != SUCCESS {
 		return Errno(ret)
 	}
+	txn._txn = nil
 	return nil
 }
 
 func (txn *Txn) Abort() {
+	if txn._txn == nil {
+		return
+	}
 	C.mdb_txn_abort(txn._txn)
 	txn._txn = nil
 }
