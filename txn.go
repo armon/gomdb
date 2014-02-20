@@ -8,8 +8,6 @@ package mdb
 import "C"
 
 import (
-	"bytes"
-	"encoding/gob"
 	"math"
 	"runtime"
 	"unsafe"
