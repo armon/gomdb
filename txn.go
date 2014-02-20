@@ -8,7 +8,10 @@ package mdb
 import "C"
 
 import (
+	"bytes"
+	"encoding/gob"
 	"math"
+	"runtime"
 	"unsafe"
 )
 
@@ -47,8 +50,12 @@ func (env *Env) BeginTxn(parent *Txn, flags uint) (*Txn, error) {
 	} else {
 		ptxn = parent._txn
 	}
+	if flags&RDONLY == 0 {
+		runtime.LockOSThread()
+	}
 	ret := C.mdb_txn_begin(env._env, ptxn, C.uint(flags), &_txn)
 	if ret != SUCCESS {
+		runtime.UnlockOSThread()
 		return nil, Errno(ret)
 	}
 	return &Txn{_txn}, nil
@@ -56,6 +63,7 @@ func (env *Env) BeginTxn(parent *Txn, flags uint) (*Txn, error) {
 
 func (txn *Txn) Commit() error {
 	ret := C.mdb_txn_commit(txn._txn)
+	runtime.UnlockOSThread()
 	if ret != SUCCESS {
 		return Errno(ret)
 	}
@@ -68,6 +76,7 @@ func (txn *Txn) Abort() {
 		return
 	}
 	C.mdb_txn_abort(txn._txn)
+	runtime.UnlockOSThread()
 	txn._txn = nil
 }
 
