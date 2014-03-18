@@ -44,6 +44,9 @@
  *  don't use it.
  */
 #define MDB_PID_T	int
+
+/** Windows defines these POSIX functions with a _ prefix. */
+#define strdup _strdup
 #ifdef __GNUC__
 # include <sys/param.h>
 #else
