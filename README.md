@@ -21,6 +21,9 @@ It will install to /usr/local
 
 `go test -v`
 
+On FreeBSD 10, you must explicitly set `CC` (otherwise it will fail with a cryptic error):
+
+`CC=clang go test -v`
 
 
 TODO
