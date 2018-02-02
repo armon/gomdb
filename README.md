@@ -9,11 +9,12 @@ GoDoc available here: http://godoc.org/github.com/szferi/gomdb
 Build
 =======
 
-`git clone -b mdb.master --single-branch git://git.openldap.org/openldap.git`
-
-`make`
-
-`make install`
+```bash
+git clone -b mdb.master --single-branch git://git.openldap.org/openldap.git
+cd openldap/libraries/liblmdb
+make
+make install
+```
 
 It will install to /usr/local
 
